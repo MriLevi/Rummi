@@ -20,10 +20,11 @@ class SetGenerator:
 
     def generate_tiles(self):
         tiles = defaultdict(list)
+        colorkey = {1:'red', 2:'yellow', 3:'blue', 4:'black'}
         for tile_set in range(1, self.tile_sets+1): #for every tile set
             for number in range(1, self.numbers+1): #for every number in the tile set
                 for color in range(1, self.colors+1): #for every color in colors
-                    tiles[f'{color}_{tile_set}'].append(number) #add every number to the corresponding key
+                    tiles[f'{colorkey[color]}_{tile_set}'].append(number) #add every number to the corresponding key
         for joker in range(1, self.jokers+1):
             tiles['jokers'].append(joker) #add the jokers
         return tiles
@@ -54,16 +55,3 @@ class SetGenerator:
         sets['runs'].append(self.generate_valid_runs())
         sets['groups'].append(self.generate_valid_groups())
         return sets
-
-
-
-
-
-sg = SetGenerator()
-groups = sg.generate_valid_groups()
-runs = sg.generate_valid_runs()
-sets = sg.generate_possible_sets()
-
-print(runs)
-print(groups)
-print(sets)
