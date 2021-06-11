@@ -13,9 +13,10 @@ class SetGenerator:
             self.tiles = self.generate_tiles()
             self.tilecount = (colors*numbers)+jokers
             self.minimal_startscore = minimal_startscore
-            self.runs = self.generate_valid_runs()
+            self.runs = self.generate_valid_runs(self.tiles)
             self.groups = self.generate_valid_groups()
             self.sets = self.generate_possible_sets()
+
             #self.generate_sets()
 
     def generate_tiles(self):
@@ -24,7 +25,7 @@ class SetGenerator:
         for tile_set in range(1, self.tile_sets+1): #for every tile set
             for number in range(1, self.numbers+1): #for every number in the tile set
                 for color in range(1, self.colors+1): #for every color in colors
-                    tiles[f'{colorkey[color]}_{tile_set}'].append(number) #add every number to the corresponding key
+                    tiles[f'{colorkey[color]}'].append(number) #add every number to the corresponding key
         for joker in range(1, self.jokers+1):
             tiles['jokers'].append(joker) #add the jokers
         return tiles
@@ -34,25 +35,25 @@ class SetGenerator:
         groups = [tuple([i for j in range(j)]) for i in range(1, self.numbers+1) for j in range(3, self.colors+1)]
         return groups
 
-    def generate_valid_runs(self):
+    def generate_valid_runs(self, tiles):
         #generate valid runs
         runs = defaultdict(list) #generate a default dict with lists as values
-        for key, value in self.tiles.items(): #for every color and tile value
+        for key, value in tiles.items(): #for every color and tile value
             for i in range(3, 14): #for the run lengths 3-14
-                for item in itertools.combinations(value, i): #for every combination of tiles with length i
+                for item in itertools.combinations(value[:13], i): #for every combination of tiles with length i
                     all_1_diff = True #check if the values in the combination have a difference of one with their neighbours
                     for j in range(1, len(item)):
                         if item[j] - item[j-1] != 1:
                             all_1_diff = False
                     if all_1_diff: #if all values have a difference of 1, append them as a valid run
-                        runs[key[0]].append(item)
+                        runs[key].append(item)
         return runs
 
 
     def generate_possible_sets(self):
         #combine runs and groups to form a list of possible sets
         sets = defaultdict(list)
-        sets['runs'].append(self.generate_valid_runs())
-        sets['groups'].append(self.generate_valid_groups())
+        sets['runs'].append(self.runs)
+        sets['groups'].append(self.groups)
         return sets
 sg = SetGenerator()
