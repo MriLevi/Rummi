@@ -3,6 +3,7 @@ import set_generator
 import solve_tiles
 from collections import defaultdict
 
+
 def text_gui(query, *answers):
     while True:
         print(query)
@@ -12,6 +13,7 @@ def text_gui(query, *answers):
             return answer
         else:
             print('Try again, that input was not valid')
+
 
 def rack_pretty_print(rack):
     black, yellow, red, cyan, jokers = [], [], [], [], []
@@ -47,24 +49,38 @@ def rack_pretty_print(rack):
             else:
                 for i in value:
                     jokers.append(i)
-    print(f'Je hebt dit op je bord:\n Zwart: {sorted(black)}, Geel: {sorted(yellow)}, Rood: {sorted(red)}, Cyaan: {sorted(cyan)}, jokers: {sorted(jokers)}')
+    print(
+        f'Je hebt dit op je bord:\n Zwart: {sorted(black)}, Geel: {sorted(yellow)}, Rood: {sorted(red)}, Cyaan: {sorted(cyan)}, jokers: {sorted(jokers)}')
+
 
 def main():
-    rummi = RummikubGame()
+    game = RummikubGame()
     playerrack = defaultdict(list)
-    playerrack = rummi.draw_tile(playerrack, tile_amount=14)
+    playerrack = game.draw_tile(playerrack, tile_amount=14)
     computerrack = defaultdict(list)
-    computerrack = rummi.draw_tile(computerrack, tile_amount=14)
+    computerrack = game.draw_tile(computerrack, tile_amount=14)
     playerfirsttile = next(iter(playerrack))
     computerfirsttile = next(iter(computerrack))
+    playerstarts = True
 
     print('Welkom bij rummikub!')
     print(f'De computers eerste tegel is:{computerrack[computerfirsttile][0]}')
     print(f'Jouw eerste tegel is: {playerrack[playerfirsttile][0]}')
+
     if computerrack[computerfirsttile][0] > playerrack[playerfirsttile][0]:
         print('De computer begint!')
+        playerstarts = False
     else:
         print('Jij begint!')
+    while game.winner is None:
+        if playerstarts:
+            playerrack, game.board = game.take_player_turn()
+            computerrack, game.board = game.take_computer_turn()
+        else:
+            computerrack, game.board = game.take_computer_turn()
+            playerrack, game.board = game.take_player_turn()
+
     rack_pretty_print(playerrack)
+
 
 main()
