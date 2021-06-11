@@ -3,13 +3,19 @@ from collections import defaultdict
 from console import Console
 
 
+def sort_defaultdict(dict):
+    for key, value in dict.items():
+        newvalue = sorted(value)
+        dict[key] = newvalue
+    return dict
+
 def main():
     game = RummikubGame()
     con = Console()
     playerrack = defaultdict(list)
-    playerrack = game.draw_tile(playerrack, tile_amount=14)
+    playerrack = sort_defaultdict(game.draw_tile(playerrack, tile_amount=14))
     computerrack = defaultdict(list)
-    computerrack = game.draw_tile(computerrack, tile_amount=14)
+    computerrack = sort_defaultdict(game.draw_tile(computerrack, tile_amount=14))
 
     print('Welcome to Rummikub!')
     playerstarts = game.select_starting_player()
