@@ -1,10 +1,12 @@
+from set_generator import SetGenerator
 class SolveTiles:
 
-    def __init__(self, tiles, sets, numbers=13, colors=4, rack=[], table=[]):
-        self.tiles=tiles
-        self.sets = sets
-        self.table = table
-        self.rack = rack
+
+    def __init__(self):
+        pass
+
+    def solve_tiles(self, rack, table):
+        print('solve tiles')
 
     def points(self, possiblesolution):
         points = 0
