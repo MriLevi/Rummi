@@ -27,26 +27,52 @@ class SetGenerator:
                 for color in range(1, self.colors+1): #for every color in colors
                     tiles[f'{colorkey[color]}'].append(number) #add every number to the corresponding key
         for joker in range(1, self.jokers+1):
-            tiles['jokers'].append(joker) #add the jokers
+            tiles['jokers'].append(f'j{joker}') #add the jokers
         return tiles
 
-    def generate_valid_groups(self):
+    def generate_valid_groups(self, tiles):
         #generate valid groups
         groups = [tuple([i for j in range(j)]) for i in range(1, self.numbers+1) for j in range(3, self.colors+1)]
         return groups
 
     def generate_valid_runs(self, tiles):
-        #generate valid runs
-        runs = defaultdict(list) #generate a default dict with lists as values
-        for key, value in tiles.items(): #for every color and tile value
-            for i in range(3, 14): #for the run lengths 3-14
-                for item in itertools.combinations(value[:13], i): #for every combination of tiles with length i
-                    all_1_diff = True #check if the values in the combination have a difference of one with their neighbours
-                    for j in range(1, len(item)):
-                        if item[j] - item[j-1] != 1:
-                            all_1_diff = False
-                    if all_1_diff: #if all values have a difference of 1, append them as a valid run
-                        runs[key].append(item)
+        # generate valid runs
+        runs = defaultdict(list)  # generate a default dict with lists as values
+        joker = len(tiles['jokers'])
+        for key, value in tiles.items():  # for every color and tile value
+            for i in range(3, 14):  # for the run lengths 3-14
+                for item in itertools.combinations(value[:13], i):  # for every combination of tiles with length i
+                    sum = 0
+                    save_index = None
+                    save_index_2 = None
+                    two_gap_index = None
+                    for j in reversed(range(1, len(item))):
+                        currentcalculation = item[j] - item[j - 1]
+                        sum += currentcalculation
+                        if currentcalculation == 2:
+                            if save_index == None:
+                                save_index = j
+                            else:
+                                save_index_2 = j
+                        if currentcalculation == 3:
+                            two_gap_index = j
+
+                    if sum == len(item) - 1:  # no jokers needed
+                        tempitem = list(item)
+                        runs[key].append(tempitem)
+                    if sum == len(item) and joker >= 1:
+                        tempitem = list(item)
+                        tempitem.insert(save_index, tiles['jokers'][0])
+                        runs[key].append(tempitem)
+                    if sum == len(item) + 1 and joker == 2:
+                        tempitem = list(item)
+                        if two_gap_index == None:
+                            tempitem.insert(save_index, tiles['jokers'][0])
+                            tempitem.insert(save_index_2, tiles['jokers'][1])
+                        else:
+                            tempitem.insert(two_gap_index, tiles['jokers'][1])
+                            tempitem.insert(two_gap_index, tiles['jokers'][0])
+                        runs[key].append(tempitem)
         return runs
 
 
