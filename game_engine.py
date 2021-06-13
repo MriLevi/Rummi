@@ -52,10 +52,8 @@ class RummikubGame:
         for i in range(1, tile_amount + 1):
             #select a random key based on how many tiles are still left in that colour
             #basically making sure we have equal chance of drawing any tile, as we select a random key first.
+            #this method also means that we can't select empty keys, as they will have a weight of 0
             random_key = random.choices(list(self.bag.keys()), weights=[float(len(i)) for i in self.bag.values()], k=1)
-            while self.bag[random_key[0]] == []: #this might be obsolete
-                random_key = random.choices(list(self.bag.keys()), weights=[float(len(i)) for i in self.bag.values()],
-                                            k=1)
             random_value = random.choice(self.bag[random_key[0]]) #chose a random tile within the chosen key
             temprack[random_key[0]].append(random_value) #append the chosen tile to the rack
             self.bag[random_key[0]].remove(random_value) #remove the tile from the bag
@@ -63,12 +61,11 @@ class RummikubGame:
 
     def take_player_turn(self, board, rack):
         print('take player turn initialized')
-        print(f'rack:{rack}, board: {board}')
         self.con.rack_pretty_print(rack)
         place_tiles = self.con.text_gui('Do you want to put tiles on the board?', 'yes', 'no')
         if place_tiles == 'yes':
             solutions = self.solver.solve_tiles(board, rack)
-            print('Which placement did you come up with?', solutions)
+            self.con.text_gui('Which placement did you come up with?', solutions)
             return rack, board
         else:
             self.draw_tile(rack, tile_amount=1)
@@ -79,6 +76,6 @@ class RummikubGame:
         print(f'rack:{rack}, board: {board}')
         if len(rack) == 0:
             self.winner = 'computer'
-        solutions = self.solver.solve_tiles(board, rack)
+        #solutions = self.solver.solve_tiles(board, rack)
         return rack, board
 

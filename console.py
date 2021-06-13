@@ -1,4 +1,9 @@
 class Console:
+
+
+    def __init__(self):
+        pass
+
     def text_gui(self, query, *answers):
         while True:
             print(query)

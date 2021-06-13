@@ -24,7 +24,9 @@ class SolveTiles:
         sorted_rack = self.sort_defaultdict(rack)
         print(f'sorted rack: {sorted_rack}')
         runs = sg.generate_valid_runs(rack)
+        groups = sg.generate_valid_groups(rack)
         print(f'found runs: {runs}')
+        print(f'found groups: {groups}')
         return runs, rack, board
 
     def points(self, possiblesolution):
