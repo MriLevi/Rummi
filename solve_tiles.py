@@ -25,13 +25,32 @@ class SolveTiles:
         print(f'sorted rack: {sorted_rack}')
         runs = sg.generate_valid_runs(rack)
         groups = sg.generate_valid_groups(rack)
+        sets = sg.generate_possible_sets(runs, groups)
         print(f'found runs: {runs}')
         print(f'found groups: {groups}')
+        print(f'found sets: {sets}')
+        self.points(sets)
         return runs, rack, board
 
     def points(self, possiblesolution):
+
+        for run in possiblesolution['runs']:
+            print(run)
+        for dict in possiblesolution['groups']:
+            print(f'dict: {dict}')
+            for key in dict.keys():
+                print(f'key? {key}')
+                for group in dict[key]:
+                    print(f'group in dict[key] {group}')
+                    grouppoints = 0
+                    for value in group:
+                        print(f'value : {value}')
+                        grouppoints += value[1]
+                    tempgroup = list(group)
+                    tempgroup.append(['points', grouppoints])
+                    print(tempgroup)
+                    dict[key] = tempgroup
+                    print(dict[key])
+                    print(dict)
         points = 0
-        for tile in possiblesolution:
-            points += tile[0]
-        print(points)
         return points

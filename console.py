@@ -13,7 +13,8 @@ class Console:
                 return answer
             else:
                 print('Try again, that input was not valid')
-
+    def board_pretty_print(self, board):
+        print(f'Dit ligt er op het bord: {board}')
 
     def rack_pretty_print(self, rack):
         black, yellow, red, cyan, jokers = [], [], [], [], []

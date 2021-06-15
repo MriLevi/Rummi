@@ -61,6 +61,7 @@ class RummikubGame:
 
     def take_player_turn(self, board, rack):
         print('take player turn initialized')
+        self.con.board_pretty_print(board)
         self.con.rack_pretty_print(rack)
         place_tiles = self.con.text_gui('Do you want to put tiles on the board?', 'yes', 'no')
         if place_tiles == 'yes':
@@ -73,7 +74,6 @@ class RummikubGame:
 
     def take_computer_turn(self, board, rack):
         print('take computer turn initialized')
-        print(f'rack:{rack}, board: {board}')
         if len(rack) == 0:
             self.winner = 'computer'
         #solutions = self.solver.solve_tiles(board, rack)

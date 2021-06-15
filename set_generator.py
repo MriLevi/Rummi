@@ -15,7 +15,7 @@ class SetGenerator:
             self.minimal_startscore = minimal_startscore
             self.runs = self.generate_valid_runs(self.tiles)
             self.groups = self.generate_valid_groups(self.tiles)
-            self.sets = self.generate_possible_sets()
+            self.sets = self.generate_possible_sets(self.runs, self.groups)
 
             #self.generate_sets()
 
@@ -30,10 +30,11 @@ class SetGenerator:
             tiles['jokers'].append(f'j{joker}') #add the jokers
         return tiles
 
-    def generate_valid_groups(self, tiles):
+    def generate_valid_groups(self, tiles, rack=defaultdict(list)):
         #generate valid groups
         tempgroups = defaultdict(list)
         groups = defaultdict(list)
+
         for key, value in tiles.items():
             for tile in value:
                 if [key, tile] not in tempgroups[tile]:
@@ -44,7 +45,7 @@ class SetGenerator:
                             groups[item[0][1]].append(item)
         return groups
 
-    def generate_valid_runs(self, tiles):
+    def generate_valid_runs(self, tiles, rack=defaultdict(list)):
         # generate valid runs
         runs = defaultdict(list)  # generate a default dict with lists as values
         joker = len(tiles['jokers'])
@@ -94,11 +95,9 @@ class SetGenerator:
         return runs
 
 
-    def generate_possible_sets(self):
+    def generate_possible_sets(self, runs, groups):
         #combine runs and groups to form a list of possible sets
         sets = defaultdict(list)
-        sets['runs'].append(self.runs)
-        sets['groups'].append(self.groups)
-        print(sets)
+        sets['runs'].append(runs)
+        sets['groups'].append(groups)
         return sets
-sg = SetGenerator()
