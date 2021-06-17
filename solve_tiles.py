@@ -29,28 +29,73 @@ class SolveTiles:
         print(f'found runs: {runs}')
         print(f'found groups: {groups}')
         print(f'found sets: {sets}')
-        self.points(sets)
+        pointsdict = self.points(sets)
+        best_play = self.find_best_play(rack, pointsdict)
         return runs, rack, board
 
     def points(self, possiblesolution):
-
+        pointsdict = defaultdict(list)
         for run in possiblesolution['runs']:
-            print(run)
+            for key in run.keys():
+                for list_of_values in run[key]:
+                    runpoints = 0
+                    tempvalue = []
+                    tempvalue.append(list_of_values)
+                    for value in list_of_values:
+                        if value != 'j1' and value != 'j2':
+                            runpoints+=value
+                        else:
+                            continue
+                    tempvalue.append(['points:', runpoints])
+                    pointsdict[key].append(tempvalue)
+
+
         for dict in possiblesolution['groups']:
-            print(f'dict: {dict}')
             for key in dict.keys():
-                print(f'key? {key}')
                 for group in dict[key]:
-                    print(f'group in dict[key] {group}')
                     grouppoints = 0
                     for value in group:
-                        print(f'value : {value}')
                         grouppoints += value[1]
                     tempgroup = list(group)
                     tempgroup.append(['points', grouppoints])
-                    print(tempgroup)
                     dict[key] = tempgroup
-                    print(dict[key])
-                    print(dict)
-        points = 0
-        return points
+                    pointsdict['groups'].append(dict)
+        return pointsdict
+
+    def find_best_play(self, rack, pointsdict):
+        print(f'points: {pointsdict}')
+        temprack = rack
+        print(f'temprack before loop: {temprack}')
+        plays_to_make = defaultdict(list)
+        for key in pointsdict.keys():
+            if key != 'groups':
+                for run in reversed(pointsdict[key]):
+                    print(run[0])
+                    for tile in run[0]:
+                        if tile == 'j1' or tile == 'j2':
+                            if tile not in temprack['jokers']:
+                                print(f'found {tile}, breaking')
+                                break
+                            else:
+                                temprack['jokers'].remove(tile)
+                        elif tile not in temprack[key]:
+                            print(f'found {tile} that is not in temprack, breaking')
+                            break
+                        else:
+                            plays_to_make[key] = run[0]
+                            temprack[key].remove(tile)
+
+            else:
+                for dict in pointsdict[key]:
+                    for group in dict.items():
+                        print(group)
+        print(f'plays we will make: {plays_to_make}')
+        print(f'temprack after loop: {temprack}')
+
+
+
+
+
+
+
+
