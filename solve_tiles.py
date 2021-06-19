@@ -1,7 +1,5 @@
-import itertools
 from set_generator import SetGenerator
-from collections import defaultdict
-
+import numpy as np
 
 class SolveTiles:
 
@@ -10,6 +8,7 @@ class SolveTiles:
         self.cyan = ['cyan_1', 'cyan_2']
         self.black = ['black_1', 'black_2']
         self.red = ['red_1', 'red_2']
+        self.sg = SetGenerator()
 
 
     def sort_defaultdict(self, dict):
@@ -18,80 +17,40 @@ class SolveTiles:
             dict[key] = newvalue
         return dict
 
-    def solve_tiles(self, board, rack):
-        sg = SetGenerator()
-        runs = defaultdict(list)  # generate a default dict with lists as values
-        sorted_rack = self.sort_defaultdict(rack)
-        print(f'sorted rack: {sorted_rack}')
-        runs = sg.generate_valid_runs(rack)
-        groups = sg.generate_valid_groups(rack)
-        sets = sg.generate_possible_sets(runs, groups)
-        print(f'found runs: {runs}')
-        print(f'found groups: {groups}')
-        print(f'found sets: {sets}')
-        pointsdict = self.points(sets)
-        best_play = self.find_best_play(rack, pointsdict)
-        return runs, rack, board
-
-    def points(self, possiblesolution):
-        pointsdict = defaultdict(list)
-        for run in possiblesolution['runs']:
-            for key in run.keys():
-                for list_of_values in run[key]:
-                    runpoints = 0
-                    tempvalue = []
-                    tempvalue.append(list_of_values)
-                    for value in list_of_values:
-                        if value != 'j1' and value != 'j2':
-                            runpoints+=value
-                        else:
-                            continue
-                    tempvalue.append(['points:', runpoints])
-                    pointsdict[key].append(tempvalue)
-
-
-        for dict in possiblesolution['groups']:
-            for key in dict.keys():
-                for group in dict[key]:
-                    grouppoints = 0
-                    for value in group:
-                        grouppoints += value[1]
-                    tempgroup = list(group)
-                    tempgroup.append(['points', grouppoints])
-                    dict[key] = tempgroup
-                    pointsdict['groups'].append(dict)
-        return pointsdict
-
-    def find_best_play(self, rack, pointsdict):
-        print(f'points: {pointsdict}')
-        temprack = rack
-        print(f'temprack before loop: {temprack}')
-        plays_to_make = defaultdict(list)
-        for key in pointsdict.keys():
-            if key != 'groups':
-                for run in reversed(pointsdict[key]):
-                    print(run[0])
-                    for tile in run[0]:
-                        if tile == 'j1' or tile == 'j2':
-                            if tile not in temprack['jokers']:
-                                print(f'found {tile}, breaking')
-                                break
-                            else:
-                                temprack['jokers'].remove(tile)
-                        elif tile not in temprack[key]:
-                            print(f'found {tile} that is not in temprack, breaking')
-                            break
-                        else:
-                            plays_to_make[key] = run[0]
-                            temprack[key].remove(tile)
-
+    def generate_matrix(self, tiles):
+        matrix = np.zeros((self.sg.colors, self.sg.numbers))
+        jokers = 0
+        for tile in tiles:
+            if tile[0] < 5: #if the tile is not a joker
+                matrix[tile[0]-1][tile[1]-1] += 1 #up the value of tile in matrix
             else:
-                for dict in pointsdict[key]:
-                    for group in dict.items():
-                        print(group)
-        print(f'plays we will make: {plays_to_make}')
-        print(f'temprack after loop: {temprack}')
+                jokers+=1
+        return matrix, jokers
 
+    #def max_score(self, value, runs):
+
+    #def make_runs(self, tiles, jokers, rack):
+
+        #return runs
+
+
+
+    def solve_tiles(self, board=[], rack=[]):
+        union = board+rack
+        jokers = 0
+        for tile in union:
+            if tile[1] == 5:
+                jokers+=1
+        unionmatrix, jokers = self.generate_matrix(union)
+        runs = np.zeros((self.sg.colors, self.sg.tile_sets))
+        print(unionmatrix)
+        for row in range(1, unionmatrix):
+            for tile in range(1, row):
+                if unionmatrix[row][tile] + unionmatrix[row][tile+1] == 2:
+                    runs.append()
+        #for runs, runscores in self.make_runs(unionmatrix):
+        #runs = self.make_runs(union, jokers, rack)
+        #return runs, rack, board
 
 
 
