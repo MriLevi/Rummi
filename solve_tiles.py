@@ -38,7 +38,7 @@ class SolveTiles:
             newsolutions.extend(new_groups) #add all the new possible groups as a new solution to newsolutions
 
         #call start_new_runs to find all the new single tile solutions
-        new_run_starts = self.start_new_runs(filtertiles, tiles)
+        new_run_starts = self.start_new_runs(tiles, n)
 
         if len(new_run_starts) != 0: #if we can start new runs
             newsolutions.extend(new_run_starts) #add the newly started runs
@@ -47,8 +47,10 @@ class SolveTiles:
             loop_solutions = solutions.copy()
             for solution in solutions:
                 solutions_with_groups = self.find_new_groups(n, solution['hand'], solution)
-                loop_solutions.extend(solutions_with_groups)
-                newsolutions.extend(solutions_with_groups)
+                loop_solutions.extend(solutions_with_groups) #add to the solutions to loop over
+                newsolutions.extend(solutions_with_groups) #add to the final solutions
+                solutions_with_new_runs = self.start_new_runs(solution['hand'], n, solution)
+
             for solution in loop_solutions:  # for every solution found so far
                 solution_tiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), solution['hand'])) #select only the n value tiles and jokers in hand
                 for set in solution['sets']: #for every set in the current solution
@@ -57,13 +59,14 @@ class SolveTiles:
                         for tile in solution_tiles: #for every tile in hand with current n value
                             if self.canExtend(tile, set): #check if the set can be extended
                                 #extend it:
-                                newset = set
+                                newset = set.copy()
                                 newset.append(tile) #extend the set
+                                solution_tiles.remove(tile) #remove the tile
                                 tempsolution = defaultdict(list)  # create a new solution
                                 tempsolution['sets'] = solution['sets'].copy()
                                 tempsolution['sets'].remove(set)
                                 tempsolution['sets'] += [newset] #append the new set to the solution
-                                tempsolution['hand'] += self.copy_list_and_delete_tiles(tile, solution['hand']) #remove the used tile from hand
+                                tempsolution['hand'] = self.copy_list_and_delete_tiles(tile, solution['hand']) #remove the used tile from hand
                                 tempsolution['score'] = self.calculate_score(tempsolution['sets']) #calculate score
                                 newsolutions.append(tempsolution) #append the new solution to list of solutions
                                 break #if we've extended the current set, we can break out of this loop.
@@ -76,13 +79,12 @@ class SolveTiles:
         #Check if extending and forming group is possible
         #If neither possible, discard the solution if the length of the run is 2 or lower
         #Checking jokers should happen here too. Extending a run is always possible with joker
-
-
-
-        print(f'at the end: {len(newsolutions)}')
+        score=0
         for solution in newsolutions:
-            print(solution['sets'])
-        if n < 3:
+            if solution['score'] > score:
+                score = solution['score']
+        print(f'highest score:{score}')
+        if n < 14:
             return self.test_solution_finder(n+1, newsolutions, tiles)
         else:
             return newsolutions
@@ -120,7 +122,6 @@ class SolveTiles:
                         solution['sets'] = input_solution['sets'].copy()
                         solution['sets'] += [tempitem]
                         solution['hand'] = self.copy_list_and_delete_tiles(tempitem, tiles)
-
                     solution['score'] = self.calculate_score(solution['sets'])
                     tempsolutions.append(solution)
 
@@ -152,15 +153,24 @@ class SolveTiles:
                         score+= tile[1]
         return score
 
-    def start_new_runs(self, tiles, hand):
+    def start_new_runs(self, tiles, n, input_solution=None):
         newsolutions = []
-        for tile in tiles:
+        filtertiles = list(filter(lambda tile: (tile[1] == n), tiles))
+        for tile in filtertiles:
             # make a new solution with the current tile:
             tempsolution = defaultdict(list)
-            tempsolution['sets'] += [[tile]]
-            tempsolution['hand'] = self.copy_list_and_delete_tiles(tile, hand)
-            tempsolution['score'] = self.calculate_score(tempsolution['sets'])
-            newsolutions.append(tempsolution)
+            if input_solution == None:
+                tempsolution['sets'] += [[tile]]
+                tempsolution['hand'] = self.copy_list_and_delete_tiles(tile, tiles)
+                tempsolution['score'] = self.calculate_score(tempsolution['sets'])
+                newsolutions.append(tempsolution)
+            else:
+                tempsolution['sets'] = input_solution['sets'].copy()
+                tempsolution['sets'] += [[tile]]
+                tempsolution['hand'] = self.copy_list_and_delete_tiles(tile, input_solution['hand'])
+                tempsolution['score'] = self.calculate_score(tempsolution['sets'])
+                newsolutions.append(tempsolution)
+
         return newsolutions
 
     def copy_list_and_delete_tiles(self, to_remove, tiles):
