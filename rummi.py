@@ -5,8 +5,8 @@ from console import Console
 def main():
     game = RummikubGame()
     con = Console()
-    playerrack = []
-    playerrack = game.draw_tile(playerrack, tile_amount=28)
+    playerrack = [] #create a new rack
+    playerrack = game.draw_tile(playerrack, tile_amount=14) #draw 14 tiles to it
     computerrack = []
     computerrack = game.draw_tile(computerrack, tile_amount=14)
 
