@@ -27,8 +27,7 @@ class RummikubGame:
                     print('drew joker, drawing again...')
                     random_tile = random.choice(self.bag)
                 two_tiles.append(random_tile)
-            print(two_tiles)
-            print(f'You drew {two_tiles[0]}, computer drew: {two_tiles[1]}')
+            print(f'You drew {self.con.print_colored_tile(two_tiles[0])}, computer drew: {self.con.print_colored_tile(two_tiles[1])}')
             if two_tiles[0][1] > two_tiles[1][1]:
                 print('You start!')
                 starting_player_selected = True
@@ -57,12 +56,14 @@ class RummikubGame:
         return temprack
 
     def take_player_turn(self, board, rack):
-        print('take player turn initialized')
         self.con.board_pretty_print(board)
         self.con.rack_pretty_print(rack)
-        place_tiles = self.con.text_gui('Do you want to put tiles on the board?', 'yes', 'no')
-        if place_tiles == 'yes':
+        find_best_move = self.con.text_gui('Do you want to find the best opening move?', 'yes', 'no')
+        if find_best_move == 'yes':
             solutions = self.solver.solve_tiles(board, rack)
+            #print(solutions)
+            #best_solution = max(solutions, key=lambda x:x['score'])
+            #print(best_solution)
             self.con.text_gui('Which placement did you come up with?', solutions)
             return rack, board
         else:
@@ -70,7 +71,6 @@ class RummikubGame:
             return rack, board
 
     def take_computer_turn(self, board, rack):
-        print('take computer turn initialized')
         if len(rack) == 0:
             self.winner = 'computer'
         #solutions = self.solver.solve_tiles(board, rack)
