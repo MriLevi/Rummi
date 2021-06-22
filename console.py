@@ -16,16 +16,21 @@ class Console:
                 print('Try again, that input was not valid')
 
     def board_pretty_print(self, board):
-        print(f'Dit ligt er op het bord: {board}')
+        if len(board) == 0:
+            pass
+        else:
+            print(f'These tiles are on the table: {board}')
 
-    def rack_pretty_print(self, rack):
+    def print_colored_tile(self, tile):
         colordict = {1: 'grey', 2: 'red', 3: 'yellow', 4: 'blue', 5: 'magenta'}
+        return f'[{colored(tile[1], colordict[tile[0]])}]'
+    def rack_pretty_print(self, rack):
         black, red, yellow, cyan = [], [], [], []
         printstring = ''
         for i in sorted(rack):
             if i[0] < 5:
-                printstring += ' ' + colored(i[1], colordict[i[0]])
+                printstring += ' ' + self.print_colored_tile(i)
             else:
-                printstring += ' jokers: ' + colored(i[1], colordict[i[0]])
-        print('Je hebt dit op je bord liggen:')
+                printstring += ' jokers: ' + self.print_colored_tile(i)
+        print('These tiles are on your rack:')
         print(printstring)
