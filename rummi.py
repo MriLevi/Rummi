@@ -1,5 +1,4 @@
 from game_engine import RummikubGame
-from collections import defaultdict
 from console import Console
 
 def main():

@@ -1,7 +1,4 @@
-import sys
-
 from set_generator import SetGenerator
-import numpy as np
 from itertools import combinations
 from collections import defaultdict
 from console import Console
@@ -134,7 +131,6 @@ class SolveTiles:
                 # here we try to extend a run, if we do, we append the solution
                 if not self.is_set_group(tile_set):  # if current set is not a group
                     for tile in solution_tiles:  # for every tile in hand with current n value
-                        #print(f'tile: {tile}, set: {tile_set}, can extend: {self.can_extend(tile, tile_set)}')
                         if self.can_extend(tile, tile_set):  # check if the set can be extended
                             # extend it:
                             newset = tile_set.copy()
@@ -158,7 +154,7 @@ class SolveTiles:
         new_runs = []
         filtertiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), tiles))
 
-        for i in range(1, 3):
+        for i in range(1, len(filtertiles)+1):
             for item in combinations(filtertiles, i):
                 tempsolution = defaultdict(list)
                 tempitem = list(item)
@@ -166,7 +162,9 @@ class SolveTiles:
                     if len(item) == 1:
                         set_to_append = [tempitem]
                     else:
-                        set_to_append = [[tempitem[0]], [tempitem[1]]]
+                        set_to_append = []
+                        for j in range(0, len(tempitem)):
+                            set_to_append.append([tempitem[j]])
 
                     tempsolution['sets'] += set_to_append
                     tempsolution['hand'] = self.copy_list_and_delete_tiles(set_to_append, tiles)
@@ -177,7 +175,9 @@ class SolveTiles:
                     if len(item) == 1:
                         set_to_append = [tempitem]
                     else:
-                        set_to_append = [[tempitem[0]], [tempitem[1]]]
+                        set_to_append = []
+                        for j in range(0, len(tempitem)):
+                            set_to_append.append([tempitem[j]])
                     tempsolution['sets'] += set_to_append
                     tempsolution['hand'] = self.copy_list_and_delete_tiles(set_to_append, input_solution['hand'])
                     tempsolution['score'] = self.calculate_score(tempsolution['sets'])
@@ -229,7 +229,7 @@ class SolveTiles:
                         score += tile[1]
             else:  # if any set is not longer than two, solution awards no score
                 score = 0
-                break
+                return score
         return score
 
     @staticmethod
