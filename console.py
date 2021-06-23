@@ -19,7 +19,14 @@ class Console:
         if len(board) == 0:
             pass
         else:
-            print(f'These tiles are on the table: {board}')
+            printstring = ''
+            for set in board:
+                setstring = ''
+                for tile in set:
+                    setstring += f'{self.print_colored_tile(tile)}'
+                printstring += f'[{setstring}] '
+            print(printstring)
+
     def solution_pretty_print(self, solution):
         printstring = ''
         for set in solution['sets']:
