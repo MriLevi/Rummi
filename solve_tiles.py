@@ -2,6 +2,7 @@ from set_generator import SetGenerator
 import numpy as np
 from itertools import combinations
 from collections import defaultdict
+from console import Console
 
 class SolveTiles:
 
@@ -11,6 +12,7 @@ class SolveTiles:
         self.black = ['black_1', 'black_2']
         self.red = ['red_1', 'red_2']
         self.sg = SetGenerator()
+        self.con = Console()
 
     def solve_tiles(self, board=[], rack=[]):
         union = board + rack
@@ -58,18 +60,38 @@ class SolveTiles:
         if n < 14:
             return self.test_solution_finder(n + 1, newsolutions, tiles)
         else:
+            bestsolutions = []
+            score = 0
+            for solution in newsolutions:
+                if solution['score'] > score:
+                    score = solution['score']
+                    bestsolutions.append(solution)
+            printstring = ''
+            for solution in bestsolutions:
+                for set in solution['sets']:
+                    setstring = ''
+                    for tile in set:
+                        setstring += self.con.print_colored_tile(tile)
+                    printstring += f'[{setstring}]'
+            print(bestsolutions)
             return newsolutions
 
     def find_new_groups(self, n, tiles, input_solution=None):
         '''this function finds all new groups, adds them to a new solution, and returns a list of solutions
         if any tiles are duplicate, we also add a solution in which we use the duplicate tiles in a new run'''
         tempsolutions = []
+
         filtertiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), tiles))  # keep only the tiles with value equal to n
-
-        # here we find groups at the current value, and append them to a new solution
-        unique_tiles = list(set(filtertiles))  # new list with all unique tiles
-        duplicate_tiles = list(set([i for i in filtertiles if filtertiles.count(i) > 1]))  # new list with all dupes
-
+        if len(filtertiles) > 2:
+            # here we find groups at the current value, and append them to a new solution
+            unique_tiles = list(set(filtertiles))  # new list with all unique tiles
+        else:
+            return []
+        if len(filtertiles) > len(unique_tiles):
+            duplicate_tiles = list(set([i for i in filtertiles if filtertiles.count(i) > 1]))  # new list with all dupes
+            duplicates = True
+        else:
+            duplicates = False
         if len(unique_tiles) > 2:  # groups have to be at least 3 tiles long, if we don't have more than 2 unique tiles, no groups are possible
             for i in range(3, 5):  # for lengths 3 and 4
                 for item in combinations(unique_tiles, i):  # for every combination of tiles
@@ -95,7 +117,7 @@ class SolveTiles:
                     tempsolutions.append(solution)
 
                     # if we have duplicate tiles, also start a new run in the same solution with each of the duplicates
-                    if len(duplicate_tiles) > 0:
+                    if duplicates:
                         for tile in duplicate_tiles:
                             dupe_solution = defaultdict(list)
                             newhand = self.copy_list_and_delete_tiles(tile, self.copy_list_and_delete_tiles(list(item),                                                                          tiles))
@@ -116,13 +138,14 @@ class SolveTiles:
         extended_run_solutions = []
         solution_tiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5),
                                      solution['hand']))  # select only the n value tiles and jokers in hand
-        if solution_tiles != 0:  # if we have any tiles leftover
+        if len(solution_tiles) > 0:  # if we have any tiles leftover
             for tile_set in solution['sets']:  # for every set in the current solution
                 tempsolution = defaultdict(list)  # create a new solution
                 tempsolution['sets'] = solution['sets'].copy()
                 # here we try to extend a run, if we do, we append the solution
                 if not self.is_set_group(tile_set):  # if current set is not a group
                     for tile in solution_tiles:  # for every tile in hand with current n value
+                        #print(f'tile: {tile}, set: {tile_set}, can extend: {self.can_extend(tile, tile_set)}')
                         if self.can_extend(tile, tile_set):  # check if the set can be extended
                             # extend it:
                             newset = tile_set.copy()
@@ -144,7 +167,7 @@ class SolveTiles:
 
     def start_new_runs(self, tiles, n, input_solution=None):
         new_runs = []
-        filtertiles = list(filter(lambda tile: (tile[1] == n), tiles))
+        filtertiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), tiles))
 
         for i in range(1, 3):
             for item in combinations(filtertiles, i):
@@ -174,18 +197,24 @@ class SolveTiles:
 
     @staticmethod
     def can_extend(tile, set):
-        if tile[0] == 5:  # jokers can always extend a run
+        if tile[0] == 5 and set[-1][0] == 5: #jokers can always extend other jokers
             return True
-        if set[0][0] != tile[
-            0]:  # if the tile is not the same suit as the first tile of the set (which is never a joker)
+        if tile[0] == 5 and set[-1][1] < 13: # jokers can always extend a run, but cannot be used as 14's, as they dont exist
+            return True
+        if len(set) == 1 and set[0][0] == 5 and tile[1] > 1: #if a run exists with only a joker in it, extendable if tile > 1
+            return True
+        elif set[0][0] != tile[0]:  # if the tile is not the same suit as the first tile of the set (which is never a joker)
             return False
-        if set[-1][0] == 5:  # if the last tile of the set is a joker
-            if set[-2][1] == tile[
-                1] - 2:  # if the tile before the joker has the same value as the tile, set is extendable
-                return True
-        if set[-1][1] == tile[
-            1] - 1:  # if the value of the last tile in the set is one lower than the tile, set is extendable
+        elif set[-1][1] == tile[1] - 1:  # if the value of the last tile in the set is one lower than the tile, set is extendable
             return True
+        elif set[-1][0] == 5:  # if the last tile of the set is a joker
+            if set[-2][0] == 5: # if the tile before that is also a jjoker
+                if len(set) > 2:
+                    if set[-3][1] == tile[1]-3:
+                        return True
+            elif set[-2][1] == tile[1] - 2:  # if the tile before the joker has the same value as the tile-2, set is extendable
+                return True
+
         else:  # set is not extendable
             return False
 
