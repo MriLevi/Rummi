@@ -14,15 +14,21 @@ class SolveTiles:
         self.con = Console()
 
     def solve_tiles(self, board=[], rack=[]):
+        '''This function appends board and rack to each other and then calls solution_finder on the union'''
         union=[]
         for set in board:
             for tile in set:
                 union.append(tile)
         union += rack
-        solutions = self.test_solution_finder(1, [], union)
+        solutions = self.solution_finder(1, [], union)
         return solutions
 
-    def test_solution_finder(self, n=1, solutions=[], tiles=[]):
+    def solution_finder(self, n=1, solutions=[], tiles=[]):
+        '''This solution finder recursively finds every combination of tiles. It starts at n=1 which stands for tile value
+            So first all tiles with value 1 are evaluated. at n=1, we start new runs and make new groups, and then make
+            this function calls itsself with n+1 and all found solutions so far.
+            At n=2, for example, we again find new runs and new groups, but we also try to find new groups/runs in existing solutions.
+             We also try to extend runs in previous solutions. All these new solutions/options are saved and recursed on.'''
         newsolutions = []
         if n > 1:
             newsolutions.extend(solutions)
@@ -58,7 +64,7 @@ class SolveTiles:
                 newsolutions.extend(self.extend_runs(solution, n))  # extend the runs, add them to newsolutions
 
         if n < 14:
-            return self.test_solution_finder(n + 1, newsolutions, tiles)
+            return self.solution_finder(n + 1, newsolutions, tiles)
         else:
             return newsolutions
 
@@ -121,6 +127,7 @@ class SolveTiles:
         return tempsolutions
 
     def extend_runs(self, solution, n):
+        '''In this function we try to extend runs for a given solution and a given n value.'''
         extended_run_solutions = []
         solution_tiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5),
                                      solution['hand']))  # select only the n value tiles and jokers in hand
@@ -151,27 +158,28 @@ class SolveTiles:
         return extended_run_solutions
 
     def start_new_runs(self, tiles, n, input_solution=None):
+        '''In this function we start new runs.'''
         new_runs = []
-        filtertiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), tiles))
+        filtertiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), tiles)) #select only tiles of value n, or jokers
 
-        for i in range(1, len(filtertiles)+1):
-            for item in combinations(filtertiles, i):
-                tempsolution = defaultdict(list)
-                tempitem = list(item)
-                if input_solution == None:
-                    if len(item) == 1:
+        for i in range(1, len(filtertiles)+1): #for length of combinations from 1 to length of the filtertiles:
+            for item in combinations(filtertiles, i): #find every combination with length i
+                tempsolution = defaultdict(list) #make a new solution
+                tempitem = list(item) #convert the combination to a list
+                if input_solution == None: #if there's no inputted solution
+                    if len(item) == 1: #if there's only one tile
                         set_to_append = [tempitem]
                     else:
                         set_to_append = []
                         for j in range(0, len(tempitem)):
-                            set_to_append.append([tempitem[j]])
+                            set_to_append.append([tempitem[j]]) #we need to do this to keep correct formatting
 
                     tempsolution['sets'] += set_to_append
                     tempsolution['hand'] = self.copy_list_and_delete_tiles(set_to_append, tiles)
                     tempsolution['score'] = self.calculate_score(tempsolution['sets'])
-                    new_runs.append(tempsolution)
-                else:
-                    tempsolution['sets'] = input_solution['sets'].copy()
+                    new_runs.append(tempsolution) #append the found solution
+                else: #if there is an input solution
+                    tempsolution['sets'] = input_solution['sets'].copy() #copy the sets in the solution into the new solution-set
                     if len(item) == 1:
                         set_to_append = [tempitem]
                     else:
@@ -186,6 +194,7 @@ class SolveTiles:
 
     @staticmethod
     def can_extend(tile, set):
+        '''This function returns true if the inputted tile can extend the inputted set, otherwise returns false'''
         if tile[0] == 5 and set[-1][0] == 5: #jokers can always extend other jokers
             return True
         if tile[0] == 5 and set[-1][1] < 13: # jokers can always extend a run, but cannot be used as 14's, as they dont exist
@@ -209,6 +218,7 @@ class SolveTiles:
 
     @staticmethod
     def is_set_group(set):
+        '''This function returns true if the given set is a group, otherwise returns false'''
         if len(set) < 3:  # groups are always at least 3 tiles long, so if its shorter, it's a run
             return False
         # Since we never use jokers at the outside of groups unless its a game winning move,
@@ -225,8 +235,8 @@ class SolveTiles:
         for set in hand:
             if len(set) > 2:
                 for tile in set:
-                    if tile[0] != 5:
-                        score += tile[1]
+                    if tile[0] != 5: #jokers do not award points
+                        score += tile[1] #score is the value of all tiles combined
             else:  # if any set is not longer than two, solution awards no score
                 score = 0
                 return score
@@ -234,6 +244,8 @@ class SolveTiles:
 
     @staticmethod
     def copy_list_and_delete_tiles(to_remove, tiles):
+        '''This function takes to_remove as input and removes the contents from tiles
+            Mostly used to strip used tiles from hand.'''
         if to_remove is None:  # if nothing has to be removed, return the tiles
             return tiles
         else:

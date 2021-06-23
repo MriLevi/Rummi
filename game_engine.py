@@ -18,16 +18,16 @@ class RummikubGame:
         '''This function determines a starting player by drawing 2 random tiles and comparing their values.'''
         starting_player_selected = False
         player_starts = None
-        while not starting_player_selected:
+        while not starting_player_selected: #as long as a starting player has not been determined
             two_tiles = []
             for i in range(2):
-                random_tile = random.choice(self.bag)
-                while random_tile[0] == 5:
+                random_tile = random.choice(self.bag) #draw a random tile
+                while random_tile[0] == 5: #if we draw a joker, draw again
                     print('drew joker, drawing again...')
                     random_tile = random.choice(self.bag)
                 two_tiles.append(random_tile)
             print(f'You drew {self.con.print_colored_tile(two_tiles[0])}, computer drew: {self.con.print_colored_tile(two_tiles[1])}')
-            if two_tiles[0][1] > two_tiles[1][1]:
+            if two_tiles[0][1] > two_tiles[1][1]: #compare the values
                 print('You start!')
                 starting_player_selected = True
                 player_starts = True
@@ -55,24 +55,28 @@ class RummikubGame:
         return temprack
 
     def take_player_turn(self, board, rack):
+        '''This is the function for a players turn. A player may choose to manually choose tiles (not implemented)
+        or use the solver to solve their turn.'''
         print('Your turn! These tiles are on the table:')
-        self.con.board_pretty_print(board)
-        self.con.rack_pretty_print(rack)
-        find_best_move = self.con.text_gui('Do you want to find the best move?', 'yes', 'no')
-        if find_best_move == 'yes':
-            solutions = self.solver.solve_tiles(board, rack)
-            best_solution = max(solutions, key=lambda x:x['score'])
 
-            if len(board) != 0:
-                check_intersection = [x for x in best_solution['sets'] if x in board]
-                if len(check_intersection) == len(board):
+        self.con.board_pretty_print(board) #print the board
+        self.con.rack_pretty_print(rack)   #print the rack
+
+        find_best_move = self.con.text_gui('Do you want to find the best move?', 'yes', 'no')
+        if find_best_move == 'yes': #if player wants to use the solver
+            solutions = self.solver.solve_tiles(board, rack)
+            best_solution = max(solutions, key=lambda x:x['score']) #filter the solutions by highest score
+
+            if len(board) != 0: #if there's tiles on the board
+                check_intersection = [x for x in best_solution['sets'] if x in board] #make a list of tiles that are in the solution and on the board
+                if len(check_intersection) == len(board): #if there's as many tiles on the board as in the solution, the found solution is simply a copy of the board
                     print('No solution is possible...')
                     self.draw_tile(rack, tile_amount=1)
                     print('Drawing a tile and ending turn.')
                     return rack, board
 
 
-            if best_solution['score'] == 0:
+            if best_solution['score'] == 0: #if the best score is 0, we dont have a valid solution
                 print('No solution is possible...')
                 self.draw_tile(rack, tile_amount=1)
                 print('Drawing a tile and ending turn.')
@@ -94,12 +98,15 @@ class RummikubGame:
         if find_best_move == 'no':
             what_play = self.con.text_gui('Which tiles do you want to play?')
             #TODO: manual tile input
+
         else:
             self.draw_tile(rack, tile_amount=1)
             print('no play has been made, drawing tile')
             return rack, board
 
     def take_computer_turn(self, board, rack):
+        '''This is the function for the computer's turn. It uses solve_tiels to find the best solution and plays it if able.
+        If not able, it draws a tile and ends its turn.'''
         print('Computers turn')
         print('Computer is calculating best move...')
         if len(rack) == 0:
@@ -126,6 +133,4 @@ class RummikubGame:
             print('Computer plays tiles:')
             self.con.solution_pretty_print(best_solution)
             return rack, board
-
-        return rack, board
 
