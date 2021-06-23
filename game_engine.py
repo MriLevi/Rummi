@@ -1,7 +1,6 @@
 from solve_tiles import SolveTiles
 from set_generator import SetGenerator
 import random
-from collections import defaultdict
 from console import Console
 
 
@@ -56,6 +55,7 @@ class RummikubGame:
         return temprack
 
     def take_player_turn(self, board, rack):
+        print('Your turn! These tiles are on the table:')
         self.con.board_pretty_print(board)
         self.con.rack_pretty_print(rack)
         find_best_move = self.con.text_gui('Do you want to find the best move?', 'yes', 'no')
@@ -83,7 +83,7 @@ class RummikubGame:
             con_play = self.con.text_gui('Play the best solution?', 'yes', 'no')
 
             if con_play == 'yes':
-                board += best_solution['sets']
+                board = best_solution['sets']
                 rack = best_solution['hand']
                 return rack, board
             if con_play == 'no':
@@ -100,10 +100,14 @@ class RummikubGame:
             return rack, board
 
     def take_computer_turn(self, board, rack):
+        print('Computers turn')
+        print('Computer is calculating best move...')
         if len(rack) == 0:
             self.winner = 'computer'
+
         solutions = self.solver.solve_tiles(board, rack)
         best_solution = max(solutions, key=lambda x: x['score'])
+
         if len(board) != 0:
             check_intersection = [x for x in best_solution['sets'] if x in board]
             if len(check_intersection) == len(board):
@@ -117,7 +121,7 @@ class RummikubGame:
             print('Drawing a tile and ending turn.')
             return rack, board
         else:
-            board += best_solution['sets']
+            board = best_solution['sets']
             rack = best_solution['hand']
             print('Computer plays tiles:')
             self.con.solution_pretty_print(best_solution)
