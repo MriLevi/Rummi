@@ -63,19 +63,28 @@ class RummikubGame:
             solutions = self.solver.solve_tiles(board, rack)
             best_solution = max(solutions, key=lambda x:x['score'])
 
+            if len(board) != 0:
+                check_intersection = [x for x in best_solution['sets'] if x in board]
+                if len(check_intersection) == len(board):
+                    print('No solution is possible...')
+                    self.draw_tile(rack, tile_amount=1)
+                    print('Drawing a tile and ending turn.')
+                    return rack, board
+
+
             if best_solution['score'] == 0:
                 print('No solution is possible...')
                 self.draw_tile(rack, tile_amount=1)
                 print('Drawing a tile and ending turn.')
                 return rack, board
+
             self.con.solution_pretty_print(best_solution)
 
             con_play = self.con.text_gui('Play the best solution?', 'yes', 'no')
+
             if con_play == 'yes':
                 board += best_solution['sets']
-                print(f'board: {board}, rack: {rack}')
                 rack = best_solution['hand']
-                print(f'board: {board}, rack: {rack}')
                 return rack, board
             if con_play == 'no':
                 self.draw_tile(rack, tile_amount=1)
@@ -84,15 +93,35 @@ class RummikubGame:
 
         if find_best_move == 'no':
             what_play = self.con.text_gui('Which tiles do you want to play?')
-
+            #TODO: manual tile input
         else:
             self.draw_tile(rack, tile_amount=1)
-            print('no play has been made')
+            print('no play has been made, drawing tile')
             return rack, board
 
     def take_computer_turn(self, board, rack):
         if len(rack) == 0:
             self.winner = 'computer'
-        #solutions = self.solver.solve_tiles(board, rack)
+        solutions = self.solver.solve_tiles(board, rack)
+        best_solution = max(solutions, key=lambda x: x['score'])
+        if len(board) != 0:
+            check_intersection = [x for x in best_solution['sets'] if x in board]
+            if len(check_intersection) == len(board):
+                print('Computer couldnt make a play')
+                self.draw_tile(rack, tile_amount=1)
+                print('Computer draws a tile and ends turn.')
+                return rack, board
+        if best_solution['score'] == 0:
+            print('No solution is possible...')
+            self.draw_tile(rack, tile_amount=1)
+            print('Drawing a tile and ending turn.')
+            return rack, board
+        else:
+            board += best_solution['sets']
+            rack = best_solution['hand']
+            print('Computer plays tiles:')
+            self.con.solution_pretty_print(best_solution)
+            return rack, board
+
         return rack, board
 
