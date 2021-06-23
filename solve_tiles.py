@@ -1,3 +1,5 @@
+import sys
+
 from set_generator import SetGenerator
 import numpy as np
 from itertools import combinations
@@ -15,16 +17,18 @@ class SolveTiles:
         self.con = Console()
 
     def solve_tiles(self, board=[], rack=[]):
-        union = board + rack
+        union=[]
+        for set in board:
+            for tile in set:
+                union.append(tile)
+        union += rack
         solutions = self.test_solution_finder(1, [], union)
         return solutions
 
     def test_solution_finder(self, n=1, solutions=[], tiles=[]):
-        print(f'current n: {n}')
         newsolutions = []
         if n > 1:
             newsolutions.extend(solutions)
-        filtertiles = list(filter(lambda tile: (tile[1] == n), tiles))  # make a filtered list with only tiles from current value
 
         # here we call find_new_groups to find all the new possible groups at the current n value
         new_groups = self.find_new_groups(n, tiles)
@@ -53,27 +57,12 @@ class SolveTiles:
                 solutions_with_new_runs = self.start_new_runs(solution['hand'], n, solution)
                 loop_solutions.extend(solutions_with_new_runs)
                 newsolutions.extend(solutions_with_new_runs)
-
             for solution in loop_solutions:  # for every solution found so far
                 newsolutions.extend(self.extend_runs(solution, n))  # extend the runs, add them to newsolutions
 
         if n < 14:
             return self.test_solution_finder(n + 1, newsolutions, tiles)
         else:
-            bestsolutions = []
-            score = 0
-            for solution in newsolutions:
-                if solution['score'] > score:
-                    score = solution['score']
-                    bestsolutions.append(solution)
-            printstring = ''
-            for solution in bestsolutions:
-                for set in solution['sets']:
-                    setstring = ''
-                    for tile in set:
-                        setstring += self.con.print_colored_tile(tile)
-                    printstring += f'[{setstring}]'
-            print(bestsolutions)
             return newsolutions
 
     def find_new_groups(self, n, tiles, input_solution=None):
