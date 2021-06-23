@@ -20,10 +20,19 @@ class Console:
             pass
         else:
             print(f'These tiles are on the table: {board}')
+    def solution_pretty_print(self, solution):
+        printstring = ''
+        for set in solution['sets']:
+            setstring = ''
+            for tile in set:
+                setstring += f'{self.print_colored_tile(tile)}'
+            printstring += f'[{setstring}] '
+        print(printstring)
 
     def print_colored_tile(self, tile):
         colordict = {1: 'grey', 2: 'red', 3: 'yellow', 4: 'blue', 5: 'magenta'}
         return f'[{colored(tile[1], colordict[tile[0]])}]'
+
     def rack_pretty_print(self, rack):
         black, red, yellow, cyan = [], [], [], []
         printstring = ''
