@@ -131,7 +131,6 @@ class SolveTiles:
                 # here we try to extend a run, if we do, we append the solution
                 if not self.is_set_group(tile_set):  # if current set is not a group
                     for tile in solution_tiles:  # for every tile in hand with current n value
-                        #print(f'tile: {tile}, set: {tile_set}, can extend: {self.can_extend(tile, tile_set)}')
                         if self.can_extend(tile, tile_set):  # check if the set can be extended
                             # extend it:
                             newset = tile_set.copy()
