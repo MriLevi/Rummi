@@ -58,16 +58,36 @@ class RummikubGame:
     def take_player_turn(self, board, rack):
         self.con.board_pretty_print(board)
         self.con.rack_pretty_print(rack)
-        find_best_move = self.con.text_gui('Do you want to find the best opening move?', 'yes', 'no')
+        find_best_move = self.con.text_gui('Do you want to find the best move?', 'yes', 'no')
         if find_best_move == 'yes':
             solutions = self.solver.solve_tiles(board, rack)
-            #print(solutions)
-            #best_solution = max(solutions, key=lambda x:x['score'])
-            #print(best_solution)
-            self.con.text_gui('Which placement did you come up with?', solutions)
-            return rack, board
+            best_solution = max(solutions, key=lambda x:x['score'])
+
+            if best_solution['score'] == 0:
+                print('No solution is possible...')
+                self.draw_tile(rack, tile_amount=1)
+                print('Drawing a tile and ending turn.')
+                return rack, board
+            self.con.solution_pretty_print(best_solution)
+
+            con_play = self.con.text_gui('Play the best solution?', 'yes', 'no')
+            if con_play == 'yes':
+                board += best_solution['sets']
+                print(f'board: {board}, rack: {rack}')
+                rack = best_solution['hand']
+                print(f'board: {board}, rack: {rack}')
+                return rack, board
+            if con_play == 'no':
+                self.draw_tile(rack, tile_amount=1)
+                print('no play has been made, drawing a tile')
+                return rack, board
+
+        if find_best_move == 'no':
+            what_play = self.con.text_gui('Which tiles do you want to play?')
+
         else:
             self.draw_tile(rack, tile_amount=1)
+            print('no play has been made')
             return rack, board
 
     def take_computer_turn(self, board, rack):
