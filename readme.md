@@ -1,4 +1,4 @@
-Welcome to Rummi!
+**Welcome to Rummi!**
 
 I programmed this as a proof-of-concept for a rummikub solver. To use, download this program and simply run rummi.py. 
 
