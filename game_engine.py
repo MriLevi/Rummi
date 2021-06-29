@@ -64,7 +64,6 @@ class RummikubGame:
         if find_best_move == 'yes': #if player wants to use the solver
             solutions = self.solver.solve_tiles(board, rack)
             best_solution = self.find_best_solution(solutions)
-            print(f'best solution: {best_solution}')
             if best_solution == []:
                 print('No move was possible, drawing a tile.')
                 self.draw_tile(rack, tile_amount=1)
@@ -138,7 +137,7 @@ class RummikubGame:
 
                 if len(check_intersection) == len(flat_solution): #if the solution has the same length as the intersection
                     continue #we dont add any new tiles with this solution, go to the next one
-                elif len(check_intersection) != len(flat_board): #if the intersection has less tiles than the board
+                elif len(check_intersection) < len(flat_board): #if the intersection has less tiles than the board
                     #then we are not using all board tiles, go to the next solution
                     continue
                 else: #if all board tiles are used and we add new tiles with this solution:
