@@ -9,10 +9,11 @@ class RummikubGame:
     def __init__(self):
         self.board = []
         self.winner = None
-        self.sg = SetGenerator()
-        self.solver = SolveTiles()
-        self.bag = self.sg.generate_tiles()
-        self.con = Console()
+        self.sg = SetGenerator() #instantiate the set generator
+        self.solver = SolveTiles() #instantiate the solver
+        self.con = Console() #instantiate the console
+        self.bag = self.sg.generate_tiles() #generate the tiles with the set generator
+
 
     def select_starting_player(self):
         '''This function determines a starting player by drawing 2 random tiles and comparing their values.'''
@@ -45,14 +46,11 @@ class RummikubGame:
            with the param tile_amount we can specify how many tiles to draw, and this allows us to use this function
            both for drawing single tiles and drawing starting racks.'''
         temprack = rack
-        for i in range(1, tile_amount + 1):
-            #select a random key based on how many tiles are still left in that colour
-            #basically making sure we have equal chance of drawing any tile, as we select a random key first.
-            #this method also means that we can't select empty keys, as they will have a weight of 0
-            random_tile = random.choice(self.bag)
+        for i in range(1, tile_amount + 1): #draw tiles tile_amount times
+            random_tile = random.choice(self.bag) #choose random tile
             temprack.append(random_tile) #append the chosen tile to the rack
             self.bag.remove(random_tile) #remove the tile from the bag
-        return temprack
+        return temprack #return the new rack after drawing tile
 
     def take_player_turn(self, board, rack):
         '''This is the function for a players turn. A player may choose to manually choose tiles (not implemented)
@@ -65,22 +63,13 @@ class RummikubGame:
         find_best_move = self.con.text_gui('Do you want to find the best move?', 'yes', 'no')
         if find_best_move == 'yes': #if player wants to use the solver
             solutions = self.solver.solve_tiles(board, rack)
-            best_solution = max(solutions, key=lambda x:x['score']) #filter the solutions by highest score
-
-            if len(board) != 0: #if there's tiles on the board
-                check_intersection = [x for x in best_solution['sets'] if x in board] #make a list of tiles that are in the solution and on the board
-                if len(check_intersection) == len(board): #if there's as many tiles on the board as in the solution, the found solution is simply a copy of the board
-                    print('No solution is possible...')
-                    self.draw_tile(rack, tile_amount=1)
-                    print('Drawing a tile and ending turn.')
-                    return rack, board
-
-
-            if best_solution['score'] == 0: #if the best score is 0, we dont have a valid solution
-                print('No solution is possible...')
+            best_solution = self.find_best_solution(solutions)
+            print(f'best solution: {best_solution}')
+            if best_solution == []:
+                print('No move was possible, drawing a tile.')
                 self.draw_tile(rack, tile_amount=1)
-                print('Drawing a tile and ending turn.')
                 return rack, board
+
 
             self.con.solution_pretty_print(best_solution)
 
@@ -96,7 +85,7 @@ class RummikubGame:
                 return rack, board
 
         if find_best_move == 'no':
-            what_play = self.con.text_gui('Which tiles do you want to play?')
+            what_play = self.con.text_gui('Which tiles do you want to play? (THIS IS NOT IMPLEMENTED, PLEASE USE SOLVER <3')
             #TODO: manual tile input
 
         else:
@@ -113,24 +102,49 @@ class RummikubGame:
             self.winner = 'computer'
 
         solutions = self.solver.solve_tiles(board, rack)
-        best_solution = max(solutions, key=lambda x: x['score'])
+        best_solution = self.find_best_solution(solutions)
 
-        if len(board) != 0:
-            check_intersection = [x for x in best_solution['sets'] if x in board]
-            if len(check_intersection) == len(board):
-                print('Computer couldnt make a play')
-                self.draw_tile(rack, tile_amount=1)
-                print('Computer draws a tile and ends turn.')
-                return rack, board
-        if best_solution['score'] == 0:
-            print('No solution is possible...')
+        if best_solution == []:
+            print('Computer could not make a move, draws a tile')
             self.draw_tile(rack, tile_amount=1)
-            print('Drawing a tile and ending turn.')
             return rack, board
+
         else:
             board = best_solution['sets']
             rack = best_solution['hand']
             print('Computer plays tiles:')
             self.con.solution_pretty_print(best_solution)
             return rack, board
+
+    def find_best_solution(self, solutions):
+        '''This function checks the best solutions for validity by checking if the solution contains all board tiles'''
+        score_solutions = [solution for solution in solutions if solution['score'] > 0] #make a new list of scoring solutions
+        best_solution = [] #save the best solution here
+        if self.board == []: #if there is nothing on the board
+            try:
+                best_solution = max(score_solutions, key=lambda x:x['score']) #filter solutions by score and find highest score
+                return best_solution
+            except: #exception only gets hit when solutions is empty
+                return []
+        else: #if we do have tiles on the board
+            best_score = 0 #set best_score counter
+            best_solution = [] #save best solution here
+            flat_board = [tile for set in self.board for tile in set] #make a flat list of all tuples in board
+            for solution in score_solutions: #for every solution in the filtered list
+                #make a flat list with all tuples in solution that are same as board
+                check_intersection = [tile for set in solution['sets'] for tile in set if tile in flat_board]
+                #make a flat list that has all tiles of a solution
+                flat_solution = [tile for set in solution['sets'] for tile in set]
+
+                if len(check_intersection) == len(flat_solution): #if the solution has the same length as the intersection
+                    continue #we dont add any new tiles with this solution, go to the next one
+                elif len(check_intersection) != len(flat_board): #if the intersection has less tiles than the board
+                    #then we are not using all board tiles, go to the next solution
+                    continue
+                else: #if all board tiles are used and we add new tiles with this solution:
+                    if solution['score'] > best_score: #if it has a better score than our best_solution
+                        best_score = solution['score'] #save the score
+                        best_solution = solution #save the solution
+            return best_solution #return the best solution
+
 
