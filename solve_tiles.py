@@ -71,6 +71,9 @@ class SolveTiles:
     def find_new_groups(self, n, tiles, input_solution=None):
         '''this function finds all new groups, adds them to a new solution, and returns a list of solutions
         if any tiles are duplicate, we also add a solution in which we use the duplicate tiles in a new run'''
+        if input_solution is not None: #if we are working with an input solution
+            if not self.check_validity(n, input_solution): #check the validity of the input_solution
+                return [] #if it is invalid, return empty list
         tempsolutions = []
 
         filtertiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), tiles))  # keep only the tiles with value equal to n
@@ -131,6 +134,13 @@ class SolveTiles:
         extended_run_solutions = []
         solution_tiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5),
                                      solution['hand']))  # select only the n value tiles and jokers in hand
+        #here we check wether the solution we're currently trying contains valid, extendable sets.
+        #we do so by checking if the unfinished sets in the solution are still extendable at the current n value
+        #if not, we do not return that solution
+        #this makes the algorithm significantly faster
+        if not self.check_validity(n, solution):
+            return []
+
         if len(solution_tiles) > 0:  # if we have any tiles leftover
             for tile_set in solution['sets']:  # for every set in the current solution
                 tempsolution = defaultdict(list)  # create a new solution
@@ -162,6 +172,14 @@ class SolveTiles:
         new_runs = []
         filtertiles = list(filter(lambda tile: (tile[1] == n or tile[0] == 5), tiles)) #select only tiles of value n, or jokers
 
+        #here we check again wether the solution we are working with is still valid
+        #if not, we don't return it and we don't try to start new runs in it, as it can never become valid
+        #this reduces the amount of useless solutions we try to start new runs in
+
+        if input_solution is not None: #if we are working with an input solution
+            if not self.check_validity(n, input_solution): #check the validity of the input_solution
+                return [] #if it is invalid, return empty list
+
         for i in range(1, len(filtertiles)+1): #for length of combinations from 1 to length of the filtertiles:
             for item in combinations(filtertiles, i): #find every combination with length i
                 tempsolution = defaultdict(list) #make a new solution
@@ -192,6 +210,22 @@ class SolveTiles:
                     new_runs.append(tempsolution)
         return new_runs
 
+    @staticmethod
+    def check_validity(n, input_solution):
+        '''this returns True if the solution can still become valid, false if it can't'''
+        output = True
+        for set in input_solution['sets']:  # for every set in that solution
+            if len(set) < 3:  # if the set has 2 or less tile
+                if set[-1][0] == 5:  # if the last tile of the set is a joker
+                    if len(set) == 1:
+                        continue
+                    elif set[-2][0] == 5:
+                        continue
+                    elif n - set[-2][1] > 3:  # if the tile before that is 3 below the current n (not extendable anymore
+                        output = False  # return an empty list, do not make new runs
+                elif n - set[-1][1] > 2:  # if the last tile of the set is 2 below the current n (not extendable anymore)
+                    output = False  # return an empty list, do not make new runs
+        return output
     @staticmethod
     def can_extend(tile, set):
         '''This function returns true if the inputted tile can extend the inputted set, otherwise returns false'''
